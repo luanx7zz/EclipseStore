@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+*.pyo
+*.log
+logs/
+.env
+*.zip
+.git/
+.gitignore
+.pythonlibs/
+.local/
+.cache/
+node_modules/
+venv/
+.venv/

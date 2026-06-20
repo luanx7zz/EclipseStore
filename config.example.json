@@ -1,0 +1,14 @@
+{
+    "saveConfig": false,
+    "botToken": "${BOT_TOKEN}",
+    "apiURL": "http://localhost:22222",
+    "botID": "${BOT_ID}",
+    "version": "1.0.0",
+    "bot": {
+        "token": "${BOT_TOKEN}",
+        "owner": "${OWNER_ID}",
+        "id": "${BOT_ID}",
+        "perms": 8,
+        "server": "${SERVER_ID}"
+    }
+}
