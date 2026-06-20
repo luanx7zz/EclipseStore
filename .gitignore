@@ -1,0 +1,44 @@
+# ─── Ambiente Python ───
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ─── Segredos / Configs sensíveis ───
+.env
+config.json
+configs/config_mongo.json
+configs/config_api.json
+configs/config_plan.json
+
+# ─── Logs ───
+logs/
+*.log
+
+# ─── Backups do bot ───
+database/backups/
+
+# ─── Assets gerados ───
+assets/qr_codes/
+*.png
+*.jpg
+*.pdf
+
+# ─── IDE ───
+.vscode/
+.idea/
+*.code-workspace
+
+# ─── SO ───
+.DS_Store
+Thumbs.db
+
+# ─── Replit ───
+.replit
+replit.nix
