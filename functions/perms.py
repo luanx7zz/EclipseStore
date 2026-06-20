@@ -48,6 +48,12 @@ class PermsManager:
     async def check(self, user_id):
         return str(user_id) in self.load()
 
+    async def check_owner(self, user_id):
+        return await self.check(user_id)
+
+    async def is_owner(self, user_id):
+        return await self.check(user_id)
+
     def __iter__(self):
         return iter(self.load())
 
