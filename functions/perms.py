@@ -1,6 +1,15 @@
 import json
 import os
 
+def _normalize(value):
+    if isinstance(value, list):
+        return [str(x) for x in value if str(x).strip()]
+    if isinstance(value, dict):
+        return [str(k) for k, v in value.items() if v]
+    if isinstance(value, (str, int)):
+        return [str(value)]
+    return []
+
 def _load_config_perms():
     paths = [
         "config.json",
@@ -8,6 +17,8 @@ def _load_config_perms():
         "database/settings/permissions.json",
         "database/perms.json",
     ]
+
+    result = []
 
     for path in paths:
         if not os.path.exists(path):
@@ -19,22 +30,22 @@ def _load_config_perms():
             continue
 
         if isinstance(data, dict):
-            if "bot" in data and isinstance(data["bot"], dict):
-                value = data["bot"].get("perms") or data["bot"].get("owner")
-            else:
-                value = data.get("perms") or data.get("permissions") or data.get("owners") or data.get("admins")
+            if isinstance(data.get("bot"), dict):
+                result += _normalize(data["bot"].get("perms"))
+                result += _normalize(data["bot"].get("owner"))
+            result += _normalize(data.get("perms"))
+            result += _normalize(data.get("permissions"))
+            result += _normalize(data.get("owners"))
+            result += _normalize(data.get("admins"))
         else:
-            value = data
+            result += _normalize(data)
 
-        if isinstance(value, list):
-            return [str(x) for x in value if str(x).strip()]
-        if isinstance(value, dict):
-            return [str(k) for k, v in value.items() if v]
-        if isinstance(value, (str, int)):
-            return [str(value)]
+    return list(dict.fromkeys(result))
 
-    return []
+perms = _load_config_perms()
 
 async def check(user_id):
-    perms = _load_config_perms()
+    global perms
+    if not perms:
+        perms = _load_config_perms()
     return str(user_id) in perms
