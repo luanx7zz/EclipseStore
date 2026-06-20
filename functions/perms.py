@@ -1,51 +1,60 @@
 import json
 import os
 
-def _normalize(value):
-    if isinstance(value, list):
-        return [str(x) for x in value if str(x).strip()]
-    if isinstance(value, dict):
-        return [str(k) for k, v in value.items() if v]
-    if isinstance(value, (str, int)):
-        return [str(value)]
-    return []
+class PermsManager:
+    def __init__(self):
+        self.paths = [
+            "config.json",
+            "database/settings/permissoes.json",
+            "database/settings/permissions.json",
+            "database/perms.json",
+        ]
 
-def _load_config_perms():
-    paths = [
-        "config.json",
-        "database/settings/permissoes.json",
-        "database/settings/permissions.json",
-        "database/perms.json",
-    ]
+    def _normalize(self, value):
+        if isinstance(value, list):
+            return [str(x) for x in value if str(x).strip()]
+        if isinstance(value, dict):
+            return [str(k) for k, v in value.items() if v]
+        if isinstance(value, (str, int)):
+            return [str(value)]
+        return []
 
-    result = []
+    def load(self):
+        result = []
 
-    for path in paths:
-        if not os.path.exists(path):
-            continue
+        for path in self.paths:
+            if not os.path.exists(path):
+                continue
 
-        try:
-            data = json.load(open(path, encoding="utf-8"))
-        except Exception:
-            continue
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+            except Exception:
+                continue
 
-        if isinstance(data, dict):
-            if isinstance(data.get("bot"), dict):
-                result += _normalize(data["bot"].get("perms"))
-                result += _normalize(data["bot"].get("owner"))
-            result += _normalize(data.get("perms"))
-            result += _normalize(data.get("permissions"))
-            result += _normalize(data.get("owners"))
-            result += _normalize(data.get("admins"))
-        else:
-            result += _normalize(data)
+            if isinstance(data, dict):
+                bot = data.get("bot")
+                if isinstance(bot, dict):
+                    result += self._normalize(bot.get("perms"))
+                    result += self._normalize(bot.get("owner"))
 
-    return list(dict.fromkeys(result))
+                for key in ("perms", "permissions", "owners", "admins"):
+                    result += self._normalize(data.get(key))
+            else:
+                result += self._normalize(data)
 
-perms = _load_config_perms()
+        return list(dict.fromkeys(result))
+
+    async def check(self, user_id):
+        return str(user_id) in self.load()
+
+    def __iter__(self):
+        return iter(self.load())
+
+    def __contains__(self, user_id):
+        return str(user_id) in self.load()
+
+perms = PermsManager()
 
 async def check(user_id):
-    global perms
-    if not perms:
-        perms = _load_config_perms()
-    return str(user_id) in perms
+    return await perms.check(user_id)
