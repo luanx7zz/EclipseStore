@@ -93,6 +93,7 @@ class OnLoad(commands.Cog):
                 _safe_task(self._check_pending_carts(), "pending_carts")
             
             # Marcar que já executou uma vez
+            await auto_load_latest_backup(self.bot)
             self._on_ready_once = True
         finally:
             # Liberar flag após um pequeno delay para evitar execuções muito próximas
@@ -484,3 +485,23 @@ class OnLoad(commands.Cog):
 
 def setup(bot: commands.Bot):
     bot.add_cog(OnLoad(bot))
+# Auto-carregar último backup ao iniciar
+async def auto_load_latest_backup(bot):
+    import os
+    import json
+    import glob
+
+    backups = sorted(glob.glob("database/backups/*.json"), key=os.path.getmtime, reverse=True)
+    if not backups:
+        print("[Backup] Nenhum backup encontrado para carregar.")
+        return
+
+    latest = backups[0]
+    print(f"[Backup] Último backup encontrado: {latest}")
+
+    # Guarda qual backup foi carregado no estado interno
+    os.makedirs("database/runtime", exist_ok=True)
+    with open("database/runtime/latest_backup_loaded.json", "w", encoding="utf-8") as f:
+        json.dump({"latest_backup": latest}, f, ensure_ascii=False, indent=2)
+
+    print(f"[Backup] Backup marcado como carregado: {latest}")
