@@ -490,18 +490,40 @@ async def auto_load_latest_backup(bot):
     import os
     import json
     import glob
+    import asyncio
 
-    backups = sorted(glob.glob("database/backups/*.json"), key=os.path.getmtime, reverse=True)
+    backups = sorted(
+        glob.glob("database/backups/Backup_Auto_*.json"),
+        key=lambda x: os.path.basename(x),
+        reverse=True
+    )
+
     if not backups:
-        print("[Backup] Nenhum backup encontrado para carregar.")
+        print("[Backup] Nenhum backup encontrado para restaurar.")
         return
 
     latest = backups[0]
     print(f"[Backup] Último backup encontrado: {latest}")
 
-    # Guarda qual backup foi carregado no estado interno
-    os.makedirs("database/runtime", exist_ok=True)
-    with open("database/runtime/latest_backup_loaded.json", "w", encoding="utf-8") as f:
-        json.dump({"latest_backup": latest}, f, ensure_ascii=False, indent=2)
+    try:
+        from tasks.backup.restore import Restore
 
-    print(f"[Backup] Backup marcado como carregado: {latest}")
+        with open(latest, "r", encoding="utf-8") as f:
+            data = json.load(f)
+
+        guild_id = os.getenv("SERVER_ID")
+        guild = bot.get_guild(int(guild_id)) if guild_id else (bot.guilds[0] if bot.guilds else None)
+
+        if not guild:
+            print("[Backup] Nenhum servidor encontrado para restaurar.")
+            return
+
+        await asyncio.sleep(5)
+
+        print(f"[Backup] Restaurando backup automaticamente em: {guild.name}")
+        await Restore.RestoreGuildBackup(guild, data, "all")
+        print(f"[Backup] Backup restaurado com sucesso: {latest}")
+
+    except Exception as e:
+        print(f"[Backup] Erro ao restaurar backup automaticamente: {e}")
+
