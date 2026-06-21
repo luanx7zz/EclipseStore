@@ -1,9 +1,7 @@
 {
   "backup_auto_ativo": true,
-  "backup_auto_minutos": 360,
-  "backup_auto_exclude": [
-    "messages"
-  ],
+  "backup_auto_minutos": 60,
+  "backup_inicial": true,
   "enabled": true,
   "auto_backup": true,
   "interval_minutes": 60,
